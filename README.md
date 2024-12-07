@@ -41,7 +41,7 @@ import { z } from 'zod'
 
 const outputSchema = z.objet({ output: z.number() })
 type Output = z.infer<typeof schema>
-function read (): Output {
+async function read (): Promise<Output> {
   const response = await fetch('http://localhost:3000')
   // Don't use the unvalidated data
   const json: unknown = await response.json()
@@ -50,7 +50,7 @@ function read (): Output {
 
 const inputSchema = z.object({ input: z.string() })
 type Input = z.infer<typeof schema>
-function write (input: Input): Output {
+async function write (input: Input): Promise<Output> {
   const response = await fetch('http://localhost:3000', {
     method: 'POST',
     body: JSON.stringify(input)
@@ -72,17 +72,17 @@ import kneel from 'kneel'
 import { z } from 'zod'
 
 const outputSchema = z.object({ output: z.number() })
-type Output = z.infer<typeof schema>
-async function read (input: Input): Output {
+type Output = z.infer<typeof outputSchema>
+async function read (input: Input): Promise<Output> {
   return await kneel({
-    url: 'http://localhost:3000'
+    url: 'http://localhost:3000',
     response: outputSchema,
   })
 }
 
 const inputSchema = z.object({ input: z.string() })
-type Input = z.infer<typeof schema>
-async function write (input: input): Output {
+type Input = z.infer<typeof inputSchema>
+async function write (input: Input): Promise<Output> {
   return await kneel({
     url: 'http://localhost:3000',
     response: outputSchema,
