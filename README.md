@@ -110,7 +110,7 @@ You can optionally include a request payload with:
 By default including a body sets the method to `POST`.
 
 By default the request body will be stringified.
-You can optionally use `URLSearchParams` and automatically the `Content-Type` header to `application/x-www-form-urlencoded` with:
+You can optionally use `URLSearchParams` and set the `Content-Type` header to `application/x-www-form-urlencoded` with:
 
 * `formEncoded`, a boolean
 
