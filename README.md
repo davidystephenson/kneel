@@ -1,6 +1,6 @@
 # `kneel`
 
-Fetch with zod
+Fetch with `zod`.
 
 ## Installation
 
@@ -18,7 +18,7 @@ const read = await kneel({
   url: 'http://localhost:3000',
   response: z.object({ names: z.array(z.string()) })
 })
-const upper = read.names.map((name) => name.toUpperCase())
+const uppercaseNames = read.names.map((name) => name.toUpperCase())
 
 const write = await kneel({
   url: 'http://localhost:3000',
@@ -45,18 +45,19 @@ async function read (): Promise<Output> {
   const response = await fetch('http://localhost:3000')
   // Don't use the unvalidated data
   const json: unknown = await response.json()
-  return schema.parse(json)
+  return outputSchema.parse(json)
 }
 
 const inputSchema = z.object({ input: z.string() })
 type Input = z.infer<typeof schema>
 async function write (input: Input): Promise<Output> {
+  const body = inputSchema.parse(input)
   const response = await fetch('http://localhost:3000', {
     method: 'POST',
-    body: JSON.stringify(input)
+    body: JSON.stringify(body)
   })
   const json: unknown = await response.json()
-  return schema.parse(json)
+  return outputSchema.parse(json)
 }
 ```
 
@@ -74,7 +75,7 @@ import { z } from 'zod'
 const outputSchema = z.object({ output: z.number() })
 type Output = z.infer<typeof outputSchema>
 async function read (input: Input): Promise<Output> {
-  return await kneel({
+  return kneel({
     url: 'http://localhost:3000',
     response: outputSchema,
   })
@@ -83,7 +84,7 @@ async function read (input: Input): Promise<Output> {
 const inputSchema = z.object({ input: z.string() })
 type Input = z.infer<typeof inputSchema>
 async function write (input: Input): Promise<Output> {
-  return await kneel({
+  return kneel({
     url: 'http://localhost:3000',
     response: outputSchema,
     body: input,
@@ -100,26 +101,21 @@ async function write (input: Input): Promise<Output> {
 You can optionally set:
 
 * `method`, a string
-* `headers`, the native `fetch` headers type
+* `headers`, matching the native `fetch` headers
 
 You can optionally include a request payload with:
 
 * `request`, a `zod` schema
-* `body`, the `request` schema's type
+* `body`, a value matching the `request` schema
 
+The `body` will be parsed by the `request` schema.
 By default including a body sets the method to `POST`.
 
-By default the request body will be stringified.
-You can optionally use `URLSearchParams` and set the `Content-Type` header to `application/x-www-form-urlencoded` with:
+By default the request body will be stringified and the `Content-Type` header will be set to `application/json`.
+You can override this with:
 
-* `formEncoded`, a boolean
+* `encoding`, either `'application/x-www-form-urlencoded'`, `'multipart/form-data'`, `'text/plain'`, or `'application/json'`, .
 
-```ts
-const response = await kneel({
-  url: 'http://localhost:3000',
-  response: outputSchema,
-  body: { input: 'hello' },
-  request: inputSchema,
-  formEncoded: true
-})
-```
+The `encoding` will be set as the value of the `Content-Type` header. `application/x-www-form-urlencoded` uses `URLSearchParams` to encode the body; `multipart/form-data` uses `FormData`; `text/plain` uses `String`.
+
+`kneel` returns a promise that resolves to the parsed response payload.
