@@ -25,7 +25,7 @@ export default async function kneel<Request, Response> (
         init.body = JSON.stringify(body)
         break
       }
-      case 'x-www-form-urlencoded': {
+      case 'application/x-www-form-urlencoded': {
         init.body = new URLSearchParams()
         for (const key in body) {
           const value = body[key]

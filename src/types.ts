@@ -3,7 +3,7 @@ import { ZodSchema } from 'zod'
 export interface RequestPayloadProps <Body> {
   body: Body
   request: ZodSchema<Body>
-  encoding?: 'application/json' | 'x-www-form-urlencoded' | 'multipart/form-data' | 'text/plain'
+  encoding?: 'application/json' | 'application/x-www-form-urlencoded' | 'multipart/form-data' | 'text/plain'
 }
 export type MaybeRequestPayloadProps <Payload> = RequestPayloadProps<Payload> | { payload?: undefined, requestSchema?: undefined }
 
