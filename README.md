@@ -108,14 +108,31 @@ You can optionally include a request payload with:
 * `request`, a `zod` schema
 * `body`, a value matching the `request` schema
 
-The `body` will be parsed by the `request` schema.
-By default including a body sets the method to `POST`.
+The `body` will be `parse`d by the `request` schema.
+By default including a body sets the method to `'POST'`.
 
-By default the request body will be stringified and the `Content-Type` header will be set to `application/json`.
+By default the request body will be encoded with `JSON.stringify()` and the `Content-Type` header will be set to `application/json`.
 You can override this with:
 
-* `encoding`, either `'application/x-www-form-urlencoded'`, `'multipart/form-data'`, `'text/plain'`, or `'application/json'`, .
+* `encoding`, which must be either `'application/x-www-form-urlencoded'`, `'multipart/form-data'`, `'text/plain'`, or `'application/json'`.
 
-The `encoding` will be set as the value of the `Content-Type` header. `application/x-www-form-urlencoded` uses `URLSearchParams` to encode the body; `multipart/form-data` uses `FormData`; `text/plain` uses `String`.
+```ts
+const inputSchema = z.object({ input: z.string() })
+type Input = z.infer<typeof inputSchema>
+async function write (input: Input): Promise<Output> {
+  return kneel({
+    url: 'http://localhost:3000',
+    response: outputSchema,
+    body: input,
+    request: inputSchema,
+    encoding: 'application/x-www-form-urlencoded'
+  })
+}
+```
 
-`kneel` returns a promise that resolves to the parsed response payload.
+The `encoding` becomes the value of the `Content-Type` header.
+`application/x-www-form-urlencoded` uses `new URLSearchParams()` to encode the body.
+`multipart/form-data` uses `new FormData()`.
+`text/plain` uses `String()`.
+
+`kneel` returns a promise that resolves to the `parse`d response payload.
