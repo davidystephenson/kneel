@@ -7,6 +7,7 @@ export default async function kneel<Request, Response> (
   props: KneelProps<Request, Response>
 ): Promise<Response> {
   const debug = props.debug ?? false
+  console.log('kneel debug', debug)
   const init: RequestInit = {}
   if (props.method != null) {
     init.method = props.method
@@ -15,6 +16,7 @@ export default async function kneel<Request, Response> (
     init.headers = props.headers
   }
   if ('request' in props) {
+    console.log('request debug', debug)
     if (init.method == null) {
       init.method = 'POST'
     }
