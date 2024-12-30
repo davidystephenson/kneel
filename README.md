@@ -92,15 +92,17 @@ async function write (input: Input): Promise<Output> {
 }
 ```
 
-`kneel` takes a single object with two required parameters:
+`kneel` takes a single object with one required parameters:
 
 * `url`, a string
-* `response`, a `zod` schema for the response payload
 
 You can optionally set:
 
+* `response`, a `zod` schema for the response payload
 * `method`, a string
 * `headers`, matching the native `fetch` headers
+
+If there is no `response` schema, `kneel` will return `void`.
 
 You can optionally include a request payload with:
 

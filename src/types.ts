@@ -11,7 +11,7 @@ export interface FetchProps <Response> {
   debug?: boolean
   headers?: HeadersInit
   method?: string
-  response: ZodSchema<Response>
+  response?: ZodSchema<Response>
   url: string
 }
 

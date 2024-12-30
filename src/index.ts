@@ -3,11 +3,10 @@ import { KneelProps } from './types'
 
 export { KneelProps } from './types'
 
-export default async function kneel<Request, Response> (
+export default async function kneel<Request, Response = void> (
   props: KneelProps<Request, Response>
 ): Promise<Response> {
   const debug = props.debug ?? false
-  console.log('kneel debug', debug)
   const init: RequestInit = {}
   if (props.method != null) {
     init.method = props.method
@@ -16,7 +15,6 @@ export default async function kneel<Request, Response> (
     init.headers = props.headers
   }
   if ('request' in props) {
-    console.log('request debug', debug)
     if (init.method == null) {
       init.method = 'POST'
     }
@@ -72,6 +70,16 @@ export default async function kneel<Request, Response> (
     }
   }
   const response = await fetch(props.url, init)
+  if (!response.ok) {
+    const text = await response.text()
+    if (debug) {
+      console.error('kneel response error', text)
+    }
+    throw new Error(text)
+  }
+  if (props.response == null) {
+    return undefined as unknown as Response
+  }
   const json: unknown = await response.json()
   if (debug) {
     console.debug('kneel json', json)
