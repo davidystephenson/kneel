@@ -18,46 +18,56 @@ export default async function kneel<Request, Response> (
     if (init.method == null) {
       init.method = 'POST'
     }
-    const body = props.request.parse(props.body)
-    const encoding = props.encoding ?? 'application/json'
-    switch (encoding) {
-      case 'application/json': {
-        init.body = JSON.stringify(body)
-        break
-      }
-      case 'application/x-www-form-urlencoded': {
-        init.body = new URLSearchParams()
-        for (const key in body) {
-          const value = body[key]
-          const string = String(value)
-          init.body.append(key, string)
-        }
-        break
-      }
-      case 'multipart/form-data': {
-        init.body = new FormData()
-        for (const key in body) {
-          const value = body[key]
-          if (
-            !(value instanceof Blob) &&
-            typeof value !== 'string'
-          ) {
-            throw new Error(`Unsupported value type: ${String(value)}`)
-          }
-          init.body.append(key, value)
-        }
-        break
-      }
-      case 'text/plain': {
-        init.body = String(body)
-        break
-      }
-      default: throw new Error(`Unsupported encoding: ${String(props.encoding)}`)
+    if (debug) {
+      console.debug('kneel request body', props.request)
     }
-    addContentType({
-      headers: init.headers,
-      value: encoding
-    })
+    try {
+      const body = props.request.parse(props.body)
+      const encoding = props.encoding ?? 'application/json'
+      switch (encoding) {
+        case 'application/json': {
+          init.body = JSON.stringify(body)
+          break
+        }
+        case 'application/x-www-form-urlencoded': {
+          init.body = new URLSearchParams()
+          for (const key in body) {
+            const value = body[key]
+            const string = String(value)
+            init.body.append(key, string)
+          }
+          break
+        }
+        case 'multipart/form-data': {
+          init.body = new FormData()
+          for (const key in body) {
+            const value = body[key]
+            if (
+              !(value instanceof Blob) &&
+              typeof value !== 'string'
+            ) {
+              throw new Error(`Unsupported value type: ${String(value)}`)
+            }
+            init.body.append(key, value)
+          }
+          break
+        }
+        case 'text/plain': {
+          init.body = String(body)
+          break
+        }
+        default: throw new Error(`Unsupported encoding: ${String(props.encoding)}`)
+      }
+      addContentType({
+        headers: init.headers,
+        value: encoding
+      })
+    } catch (error) {
+      if (debug) {
+        console.error('kneel request body error', error)
+      }
+      throw error
+    }
   }
   const response = await fetch(props.url, init)
   const json: unknown = await response.json()

@@ -31,8 +31,7 @@ console.log(typeof write.count) // 'number'
 
 ## Problem
 
-Many requests require validation.
-Making it functional can require patterns like annotating with `unknown`.
+Making validation functional can require patterns like annotating with `unknown`.
 
 ### Without `kneel`
 
@@ -117,17 +116,15 @@ You can override this with:
 * `encoding`, which must be either `'application/x-www-form-urlencoded'`, `'multipart/form-data'`, `'text/plain'`, or `'application/json'`.
 
 ```ts
+const outputSchema = z.object({ output: z.number() })
 const inputSchema = z.object({ input: z.string() })
-type Input = z.infer<typeof inputSchema>
-async function write (input: Input): Promise<Output> {
-  return kneel({
-    url: 'http://localhost:3000',
-    response: outputSchema,
-    body: input,
-    request: inputSchema,
-    encoding: 'application/x-www-form-urlencoded'
-  })
-}
+const response = await kneel({
+  url: 'http://localhost:3000',
+  response: outputSchema,
+  body: { input: 'hello' },
+  request: inputSchema,
+  encoding: 'application/x-www-form-urlencoded'
+})
 ```
 
 The `encoding` becomes the value of the `Content-Type` header.
