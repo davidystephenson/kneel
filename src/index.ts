@@ -1,11 +1,11 @@
-import { z } from 'zod'
+import { ZodSchema, z } from 'zod'
 import addContentType from './addContentType'
 import { KneelProps } from './types'
 
 export { KneelProps } from './types'
 
-export default async function kneel<Request, Response = void> (
-  props: KneelProps<Request, Response>
+export default async function kneel<I, Schema extends ZodSchema<I>, Response = void> (
+  props: KneelProps<I, Schema, Response>
 ): Promise<Response> {
   const debug = props.debug ?? false
   const init: RequestInit = {}
