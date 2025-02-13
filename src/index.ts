@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import addContentType from './addContentType'
 import { KneelProps } from './types'
 
@@ -87,3 +88,20 @@ export default async function kneel<Request, Response = void> (
   const payload = props.response.parse(json)
   return payload
 }
+
+const i = z.object({
+  x: z.number(),
+  y: z.number()
+})
+const a = { x: 1 }
+const b = { x: 1, y: 2 }
+void kneel({
+  body: a,
+  request: i,
+  url: 'https://example.com'
+})
+void kneel({
+  body: b,
+  request: i,
+  url: 'https://example.com'
+})
