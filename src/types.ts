@@ -5,7 +5,7 @@ export interface RequestPayloadProps <I, Schema extends ZodSchema<I>> {
   request: Schema
   encoding?: 'application/json' | 'application/x-www-form-urlencoded' | 'multipart/form-data' | 'text/plain'
 }
-export type MaybeRequestPayloadProps <I, Schema extends ZodSchema<I>> = RequestPayloadProps<I, Schema> | { payload?: undefined, requestSchema?: undefined }
+export type MaybeRequestPayloadProps <I, Schema extends ZodSchema<I>> = RequestPayloadProps<I, Schema> | { body?: undefined, request?: undefined }
 
 export interface FetchProps <Response> {
   debug?: boolean

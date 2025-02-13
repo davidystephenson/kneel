@@ -15,7 +15,7 @@ export default async function kneel<I, Schema extends ZodSchema<I>, Response = v
   if (props.headers != null) {
     init.headers = props.headers
   }
-  if ('request' in props) {
+  if ('request' in props && props.request != null && props.body != null) {
     if (init.method == null) {
       init.method = 'POST'
     }
@@ -24,7 +24,11 @@ export default async function kneel<I, Schema extends ZodSchema<I>, Response = v
     }
     try {
       const body = props.request.parse(props.body)
-      const encoding = props.encoding ?? 'application/json'
+      const encoding = 'encoding' in props
+        ? props.encoding == null
+          ? 'application/json'
+          : props.encoding
+        : 'application/json'
       switch (encoding) {
         case 'application/json': {
           init.body = JSON.stringify(body)
@@ -57,7 +61,7 @@ export default async function kneel<I, Schema extends ZodSchema<I>, Response = v
           init.body = String(body)
           break
         }
-        default: throw new Error(`Unsupported encoding: ${String(props.encoding)}`)
+        default: throw new Error(`Unsupported encoding: ${String(encoding)}`)
       }
       addContentType({
         headers: init.headers,
@@ -103,5 +107,9 @@ void kneel({
 void kneel({
   body: b,
   request: i,
+  url: 'https://example.com'
+})
+
+void kneel({
   url: 'https://example.com'
 })
