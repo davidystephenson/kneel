@@ -4,7 +4,7 @@ import { KneelProps } from './types'
 
 export { KneelProps } from './types'
 
-export default async function kneel<I, Schema extends ZodSchema<I>, Response = void> (
+export async function kneel<I, Schema extends ZodSchema<I>, Response = void> (
   props: KneelProps<I, Schema, Response>
 ): Promise<Response> {
   const debug = props.debug ?? false
@@ -98,3 +98,5 @@ export default async function kneel<I, Schema extends ZodSchema<I>, Response = v
   const payload = props.o.parse(json)
   return payload
 }
+
+export default kneel
