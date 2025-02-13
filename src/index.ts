@@ -20,7 +20,7 @@ export async function kneel<I, Schema extends ZodSchema<I>, Response = void> (
       throw new Error('parameter i is required when including a body')
     }
     if (props.body == null) {
-      throw new Error('paramater body is required when including i')
+      throw new Error('parameter body is required when including i')
     }
     if (init.method == null) {
       init.method = 'POST'

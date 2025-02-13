@@ -14,19 +14,19 @@ npm install kneel
 import kneel from 'kneel'
 import { z } from 'zod'
 
-const read = await kneel({
+const readResult = await kneel({
   url: 'http://localhost:3000',
-  response: z.object({ names: z.array(z.string()) })
+  o: z.object({ names: z.array(z.string()) })
 })
-const uppercaseNames = read.names.map((name) => name.toUpperCase())
+const uppercaseNames = readResult.names.map((name) => name.toUpperCase())
 
-const write = await kneel({
+const writeResult = await kneel({
   url: 'http://localhost:3000',
-  request: z.object({ name: z.string() }),
-  response: z.object({ count: z.number() }),
-  body: { name: 'Zelda Fitzgerald' }
+  i: z.object({ name: z.string() }),
+  body: { name: 'Zelda Fitzgerald' },
+  o: z.object({ count: z.number() })
 })
-console.log(typeof write.count) // 'number'
+console.log(typeof writeResult.count) // 'number'
 ```
 
 ## Problem
@@ -76,7 +76,7 @@ type Output = z.infer<typeof outputSchema>
 async function read (input: Input): Promise<Output> {
   return kneel({
     url: 'http://localhost:3000',
-    response: outputSchema,
+    o: outputSchema
   })
 }
 
@@ -85,31 +85,51 @@ type Input = z.infer<typeof inputSchema>
 async function write (input: Input): Promise<Output> {
   return kneel({
     url: 'http://localhost:3000',
-    response: outputSchema,
+    i: inputSchema,
     body: input,
-    request: inputSchema,
+    o: outputSchema
   })
 }
 ```
 
-`kneel` takes a single object with one required parameters:
+## Parameters
+
+| Parameter | Type | Description | Required | Default | Example |
+| --- | --- | --- | --- | --- | --- |
+| `url` | `string` | URL to fetch | Yes | | `'http://localhost:3000'` |
+| `i` | `zod.Schema` | Request body schema | No | | `z.object({ input: z.string() })` |
+| `o` | `zod.Schema` | Response body schema | No | | `z.object({ output: z.number() })` |
+| `body` | `unknown` | Request body | If `i` is set | | `{ input: 'hello' }` |
+| `method` | `'GET'` \| `'POST'` \| `'PUT'` \| `'DELETE'` \| `'PATCH'` | The HTTP method | No | `'GET'`, `'POST'` if `o` is set | `'POST'` |
+| `headers` | `HeadersInit` | Request headers | No | | `{ 'Content-Type': 'application/json' }` |
+| `encoding` | `'application/x-www-form-urlencoded'` \| `'multipart/form-data'` \| `'text/plain'` \| `'application/json'` | Request encoding | No | `'application/json'` | `'application/x-www-form-urlencoded'` |
+
+`kneel` takes a single object with one required parameter:
 
 * `url`, a string
 
 You can optionally set:
 
-* `response`, a `zod` schema for the response payload
 * `method`, a string
 * `headers`, matching the native `fetch` headers
 
-If there is no `response` schema, `kneel` will return `void`.
+### Output
+
+You can optionaly set an output schema with:
+
+* `o`, a `zod` schema
+
+Kneel will `parse` the response body with the `o` schema and return it.
+If there is no `o` schema, `kneel` will return `void`.
+
+### Input
 
 You can optionally include a request payload with:
 
-* `request`, a `zod` schema
-* `body`, a value matching the `request` schema
+* `i`, a `zod` schema
+* `body`, a value matching the `i` schema
 
-The `body` will be `parse`d by the `request` schema.
+The request `body` will be `parse`d by the `i` schema.
 By default including a body sets the method to `'POST'`.
 
 By default the request body will be encoded with `JSON.stringify()` and the `Content-Type` header will be set to `application/json`.
@@ -122,10 +142,10 @@ const outputSchema = z.object({ output: z.number() })
 const inputSchema = z.object({ input: z.string() })
 const response = await kneel({
   url: 'http://localhost:3000',
-  response: outputSchema,
+  i: inputSchema,
   body: { input: 'hello' },
-  request: inputSchema,
-  encoding: 'application/x-www-form-urlencoded'
+  encoding: 'application/x-www-form-urlencoded',
+  o: outputSchema
 })
 ```
 
@@ -133,5 +153,3 @@ The `encoding` becomes the value of the `Content-Type` header.
 `application/x-www-form-urlencoded` uses `new URLSearchParams()` to encode the body.
 `multipart/form-data` uses `new FormData()`.
 `text/plain` uses `String()`.
-
-`kneel` returns a promise that resolves to the `parse`d response payload.
