@@ -21,3 +21,7 @@ export interface FetchProps <Response> {
 }
 
 export type KneelProps <I, Schema extends ZodSchema<I>, Response> = FetchProps<Response> & MaybeRequestPayloadProps<I, Schema>
+
+export type KneelMake = <I, Schema extends ZodSchema<I>, O = void> (props: KneelProps<I, Schema, O>) => KneelProps<I, Schema, O>
+
+export type Kneel = <I, Schema extends ZodSchema<I>, O = void> (props: KneelProps<I, Schema, O>) => Promise<O>
