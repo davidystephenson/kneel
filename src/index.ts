@@ -1,4 +1,4 @@
-import { ZodSchema, z } from 'zod'
+import { ZodSchema } from 'zod'
 import addContentType from './addContentType'
 import { KneelProps } from './types'
 
@@ -15,15 +15,21 @@ export default async function kneel<I, Schema extends ZodSchema<I>, Response = v
   if (props.headers != null) {
     init.headers = props.headers
   }
-  if ('request' in props && props.request != null && props.body != null) {
+  if ('i' in props) {
+    if (props.i == null) {
+      throw new Error('parameter i is required when including a body')
+    }
+    if (props.body == null) {
+      throw new Error('paramater body is required when including i')
+    }
     if (init.method == null) {
       init.method = 'POST'
     }
     if (debug) {
-      console.debug('kneel request body', props.request)
+      console.debug('kneel request body', props.i)
     }
     try {
-      const body = props.request.parse(props.body)
+      const body = props.i.parse(props.body)
       const encoding = 'encoding' in props
         ? props.encoding == null
           ? 'application/json'
@@ -82,34 +88,13 @@ export default async function kneel<I, Schema extends ZodSchema<I>, Response = v
     }
     throw new Error(text)
   }
-  if (props.response == null) {
+  if (props.o == null) {
     return undefined as unknown as Response
   }
   const json: unknown = await response.json()
   if (debug) {
     console.debug('kneel json', json)
   }
-  const payload = props.response.parse(json)
+  const payload = props.o.parse(json)
   return payload
 }
-
-const i = z.object({
-  x: z.number(),
-  y: z.number()
-})
-const a = { x: 1 }
-const b = { x: 1, y: 2 }
-void kneel({
-  body: a,
-  request: i,
-  url: 'https://example.com'
-})
-void kneel({
-  body: b,
-  request: i,
-  url: 'https://example.com'
-})
-
-void kneel({
-  url: 'https://example.com'
-})

@@ -2,16 +2,21 @@ import { ZodSchema, z } from 'zod'
 
 export interface RequestPayloadProps <I, Schema extends ZodSchema<I>> {
   body: z.infer<Schema>
-  request: Schema
   encoding?: 'application/json' | 'application/x-www-form-urlencoded' | 'multipart/form-data' | 'text/plain'
+  i: Schema
 }
-export type MaybeRequestPayloadProps <I, Schema extends ZodSchema<I>> = RequestPayloadProps<I, Schema> | { body?: undefined, request?: undefined }
+export interface NotRequestPayloadProps {
+  body?: undefined
+  encoding?: undefined
+  i?: undefined
+}
+export type MaybeRequestPayloadProps <I, Schema extends ZodSchema<I>> = RequestPayloadProps<I, Schema> | NotRequestPayloadProps
 
 export interface FetchProps <Response> {
   debug?: boolean
   headers?: HeadersInit
   method?: string
-  response?: ZodSchema<Response>
+  o?: ZodSchema<Response>
   url: string
 }
 
