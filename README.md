@@ -1,6 +1,6 @@
 # `kneel`
 
-Fetch with `zod`.
+Fetch with Zod.
 
 ## Installation
 
@@ -62,8 +62,7 @@ async function write (input: Input): Promise<Output> {
 
 ## Solution
 
-`kneel` requires a `zod` schema for the response.
-It also requires a schema if you include a body.
+`kneel` requires a `zod` schema for the response. It also requires a schema if you include a body.
 
 ### With `kneel`
 
@@ -94,15 +93,257 @@ async function write (input: Input): Promise<Output> {
 
 ## Parameters
 
-| Parameter | Type | Description | Required | Default | Example |
-| --- | --- | --- | --- | --- | --- |
-| `url` | `string` | URL to fetch | Yes | | `'http://localhost:3000'` |
-| `i` | `zod.Schema` | Request body schema | No | | `z.object({ input: z.string() })` |
-| `o` | `zod.Schema` | Response body schema | No | | `z.object({ output: z.number() })` |
-| `body` | `unknown` | Request body | If `i` is set | | `{ input: 'hello' }` |
-| `method` | `'GET'` \| `'POST'` \| `'PUT'` \| `'DELETE'` \| `'PATCH'` | The HTTP method | No | `'GET'`, `'POST'` if `o` is set | `'POST'` |
-| `headers` | `HeadersInit` | Request headers | No | | `{ 'Content-Type': 'application/json' }` |
-| `encoding` | `'application/x-www-form-urlencoded'` \| `'multipart/form-data'` \| `'text/plain'` \| `'application/json'` | Request encoding | No | `'application/json'` | `'application/x-www-form-urlencoded'` |
+<table>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+<th>Default</th>
+<th>Example</th>
+</tr>
+<tr>
+<td>
+
+```ts
+url
+```
+
+</td>
+<td>
+
+```ts
+string
+```
+
+</td>
+<td>URL to fetch</td>
+<td>Yes</td>
+<td></td>
+<td>
+
+```ts
+'http://localhost:3000'
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+```ts
+i
+```
+
+</td>
+<td>
+
+```ts
+ZodSchema
+```
+
+</td>
+<td>Request body schema</td>
+<td>No</td>
+<td></td>
+<td>
+
+```ts
+z.object({
+  input: z.string()
+})
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+```ts
+o
+```
+
+</td>
+<td>
+
+```ts
+ZodSchema
+```
+
+</td>
+<td>Response body schema</td>
+<td>No</td>
+<td></td>
+<td>
+
+```ts
+z.object({
+  output: z.number()
+})
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+```ts
+body
+```
+
+</td>
+<td>
+
+```ts
+z.infer<typeof i>
+```
+
+</td>
+<td>Request body</td>
+<td>
+
+If `i` is set
+
+</td>
+<td></td>
+<td>
+
+```ts
+{ input: 'hello' }
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+```ts
+method
+```
+
+</td>
+<td>
+
+```ts
+'GET'
+| 'POST'
+| 'PUT'
+| 'DELETE'
+| 'PATCH'
+```
+
+</td>
+<td>The HTTP method</td>
+<td>No</td>
+<td>
+
+```ts
+'GET'
+```
+
+</td>
+<td>
+
+```ts
+'POST'
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+```ts
+headers
+```
+
+</td>
+<td>
+
+```ts
+HeadersInit
+```
+
+</td>
+<td>Request headers</td>
+<td>No</td>
+<td></td>
+<td>
+
+```ts
+{ Authorization: 'Bearer token' }
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+```ts
+encoding
+```
+
+</td>
+<td>
+
+```ts
+'application/x-www-form-urlencoded'
+| 'multipart/form-data'
+| 'text/plain'
+| 'application/json'
+```
+
+</td>
+<td>Request encoding</td>
+<td>No</td>
+<td>
+
+```ts
+'application/json'
+```
+
+</td>
+<td>
+
+```ts
+'text/plain'
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+```ts
+debug
+```
+
+</td>
+<td>
+
+```ts
+boolean
+```
+
+</td>
+<td>Print request, response, and errors</td>
+<td>No</td>
+<td>
+
+```ts
+false
+```
+
+</td>
+<td>
+
+```ts
+true
+```
+
+</td>
+</tr>
+</table>
 
 `kneel` takes a single object with one required parameter:
 
@@ -119,8 +360,7 @@ You can optionaly set an output schema with:
 
 * `o`, a `zod` schema
 
-Kneel will `parse` the response body with the `o` schema and return it.
-If there is no `o` schema, `kneel` will return `void`.
+If there is an `o` schema, kneel will parse the response body with `.json()`and `o.parse()`, then return it. If there is no `o` schema, `kneel` will return `void`.
 
 ### Input
 
@@ -129,11 +369,11 @@ You can optionally include a request payload with:
 * `i`, a `zod` schema
 * `body`, a value matching the `i` schema
 
-The request `body` will be `parse`d by the `i` schema.
-By default including a body sets the method to `'POST'`.
+The request `body` will be `parse`d by the `i` schema. By default including a body sets the method to `'POST'`.
 
-By default the request body will be encoded with `JSON.stringify()` and the `Content-Type` header will be set to `application/json`.
-You can override this with:
+#### Encoding
+
+By default the request body will be encoded with `JSON.stringify()` and the `Content-Type` header will be set to `application/json`. You can override this with:
 
 * `encoding`, which must be either `'application/x-www-form-urlencoded'`, `'multipart/form-data'`, `'text/plain'`, or `'application/json'`.
 
@@ -149,7 +389,103 @@ const response = await kneel({
 })
 ```
 
-The `encoding` becomes the value of the `Content-Type` header.
-`application/x-www-form-urlencoded` uses `new URLSearchParams()` to encode the body.
-`multipart/form-data` uses `new FormData()`.
-`text/plain` uses `String()`.
+The `encoding` becomes the value of the `Content-Type` header. `application/x-www-form-urlencoded` uses `new URLSearchParams()` to encode the body. `multipart/form-data` uses `new FormData()`. `text/plain` uses `String()`.
+
+## `kneelMaker`
+
+You can create a `kneel` function with custom parameters using `kneelMaker`.
+
+```ts
+import { kneelMaker } from 'kneel'
+import { z } from 'zod'
+
+const kneelHere = kneelMaker({
+  make: (props) => {
+    const { url, ...rest } = props
+    const urlHere = `http://localhost:3000${url}`
+    return { url: urlHere, ...rest }
+  }
+})
+const outputSchema = z.object({ output: z.number() })
+const response = await kneelHere({
+  url: '/hello', // Request is sent to 'http://localhost:3000/hello'
+  o: outputSchema
+})
+console.log(response.output) // number
+```
+
+<table>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+<th>Default</th>
+<th>Example</th>
+</tr>
+<tr>
+<td>
+
+```ts
+make
+```
+
+</td>
+<td>
+
+```ts
+(props: Props) => Props
+```
+
+</td>
+<td>Custom props callback</td>
+<td>Yes</td>
+<td></td>
+<td>
+
+```ts
+props => {
+  const { url, ...rest } = props
+  const urlHere = `http://localhost:3000${url}`
+  return { url: urlHere, ...rest }
+}
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+```ts
+debug
+```
+
+</td>
+<td>
+
+```ts
+boolean
+```
+
+</td>
+<td>Print input and output props</td>
+<td>No</td>
+<td>
+
+```ts
+false
+```
+
+</td>
+<td>
+
+```ts
+true
+```
+
+</td>
+</tr>
+</table>
+
+`kneelMaker` returns a custom `kneel` function with the same parameters as `kneel`.
+Each time the custom `kneel` is called, the props will be passed to the `make` callback parameter, and the props `make` returns will be passed to `kneel`.

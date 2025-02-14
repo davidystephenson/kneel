@@ -85,7 +85,7 @@ export default async function kneel<I, Schema extends ZodSchema<I>, O = void> (
   }
   const json: unknown = await response.json()
   if (debug) {
-    console.debug('kneel json', json)
+    console.debug('kneel json response', json)
   }
   const payload = props.o.parse(json)
   return payload
