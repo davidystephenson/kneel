@@ -14,19 +14,19 @@ npm install kneel
 import kneel from 'kneel'
 import { z } from 'zod'
 
-const readResult = await kneel({
+const output = await kneel({
   url: 'http://localhost:3000',
   o: z.object({ names: z.array(z.string()) })
 })
-const uppercaseNames = readResult.names.map((name) => name.toUpperCase())
+const uppercaseNames = output.names.map((name) => name.toUpperCase())
 
-const writeResult = await kneel({
+const writeOutput = await kneel({
   url: 'http://localhost:3000',
   i: z.object({ name: z.string() }),
   body: { name: 'Zelda Fitzgerald' },
   o: z.object({ count: z.number() })
 })
-console.log(typeof writeResult.count) // 'number'
+console.log(typeof writeOutput.count) // 'number'
 ```
 
 ## Problem
@@ -38,7 +38,7 @@ Making validation functional can require patterns like annotating with `unknown`
 ```ts
 import { z } from 'zod'
 
-const outputSchema = z.objet({ output: z.number() })
+const outputSchema = z.object({ output: z.number() })
 type Output = z.infer<typeof schema>
 async function read (): Promise<Output> {
   const response = await fetch('http://localhost:3000')
@@ -62,7 +62,7 @@ async function write (input: Input): Promise<Output> {
 
 ## Solution
 
-`kneel` requires a `zod` schema for the response. It also requires a schema if you include a body.
+`kneel` requires a Zod schema for a usable response. It also requires a schema if you include a body.
 
 ### With `kneel`
 
@@ -85,7 +85,7 @@ async function write (input: Input): Promise<Output> {
   return kneel({
     url: 'http://localhost:3000',
     i: inputSchema,
-    body: input,
+    body: { input: 'increment' },
     o: outputSchema
   })
 }
@@ -237,15 +237,14 @@ method
 <td>No</td>
 <td>
 
-```ts
-'GET'
-```
+`'GET'`,
+`'POST'` if `i` is set
 
 </td>
 <td>
 
 ```ts
-'POST'
+'PUT'
 ```
 
 </td>
@@ -271,7 +270,7 @@ HeadersInit
 <td>
 
 ```ts
-{ Authorization: 'Bearer token' }
+{ 'x-api-key': 'token' }
 ```
 
 </td>
@@ -301,6 +300,8 @@ encoding
 ```ts
 'application/json'
 ```
+
+if `i` is set
 
 </td>
 <td>
@@ -378,40 +379,143 @@ By default the request body will be encoded with `JSON.stringify()` and the `Con
 * `encoding`, which must be either `'application/x-www-form-urlencoded'`, `'multipart/form-data'`, `'text/plain'`, or `'application/json'`.
 
 ```ts
-const outputSchema = z.object({ output: z.number() })
 const inputSchema = z.object({ input: z.string() })
 const response = await kneel({
   url: 'http://localhost:3000',
   i: inputSchema,
   body: { input: 'hello' },
   encoding: 'application/x-www-form-urlencoded',
-  o: outputSchema
 })
 ```
 
 The `encoding` becomes the value of the `Content-Type` header. `application/x-www-form-urlencoded` uses `new URLSearchParams()` to encode the body. `multipart/form-data` uses `new FormData()`. `text/plain` uses `String()`.
 
+### `KneelProps`
+
+You can import the `KneelProps` type to match the parameters of `kneel`.
+
+```ts
+import kneel, { KneelProps } from 'kneel'
+import { z, ZodSchema } from 'zod'
+
+const fetchAndLog = async <
+  Input,
+  InputSchema extends ZodSchema<Input>,
+  Output = void
+>(props: KneelProps<Input, InputSchema, Output>) => {
+  const response = await kneel(props)
+  console.log('Response:', response)
+}
+
+await fetchAndLog({
+  url: 'http://localhost:3000/hello',
+  o: z.literal('world')
+})
+// 'Response: world'
+```
+
+`KneelProps` takes three generic parameters:
+
+<table>
+<tr>
+<th>Parameter</th>
+<th>Extends</th>
+<th>Description</th>
+<th>Default</th>
+<th>Example</th>
+</tr>
+<tr>
+<td>
+
+```ts
+Input
+```
+
+</td>
+<td>
+</td>
+<td>Request body</td>
+<td></td>
+<td>
+
+```ts
+{ input: string }
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+```ts
+InputSchema
+```
+
+</td>
+<td>
+
+```ts
+ZodSchema<Input>
+```
+
+</td>
+<td>Request body schema</td>
+<td></td>
+<td>
+
+```ts
+ZodObject<{ name: ZodString }>
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+```ts
+Output
+```
+
+</td>
+<td>
+</td>
+<td>Response body</td>
+<td>
+
+```ts
+void
+```
+
+</td>
+<td>
+
+```ts
+{ output: number }
+```
+
+</td>
+</tr>
+</table>
+
 ## `kneelMaker`
 
-You can create a `kneel` function with custom parameters using `kneelMaker`.
+You can create a `kneel` function with custom parameter middlewere using `kneelMaker`.
 
 ```ts
 import { kneelMaker } from 'kneel'
 import { z } from 'zod'
 
 const kneelHere = kneelMaker({
-  make: (props) => {
-    const { url, ...rest } = props
-    const urlHere = `http://localhost:3000${url}`
-    return { url: urlHere, ...rest }
+  make: ({ url, ...rest }) => {
+    return { url: `http://localhost:3000${url}`, ...rest }
   }
 })
-const outputSchema = z.object({ output: z.number() })
+const outputSchema = z.literal('world')
 const response = await kneelHere({
   url: '/hello', // Request is sent to 'http://localhost:3000/hello'
-  o: outputSchema
+  o: outputSchema 
 })
-console.log(response.output) // number
+console.log(response) // 'world' 
 ```
 
 <table>
@@ -434,7 +538,13 @@ make
 <td>
 
 ```ts
-(props: Props) => Props
+<
+  Input,
+  InputSchema extends ZodSchema<Input>,
+  Output = void
+> (
+  props: KneelProps<Input, InputSchema, Output>
+) => KneelProps<Input, InputSchema, Output>
 ```
 
 </td>
@@ -487,5 +597,5 @@ true
 </tr>
 </table>
 
-`kneelMaker` returns a custom `kneel` function with the same parameters as `kneel`.
-Each time the custom `kneel` is called, the props will be passed to the `make` callback parameter, and the props `make` returns will be passed to `kneel`.
+`kneelMaker` returns a custom function with the same parameters as `kneel`.
+Each time the custom function is called, the props will be passed to the `make` callback, and the props `make` returns will be passed to `kneel`.

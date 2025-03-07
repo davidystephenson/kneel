@@ -2,9 +2,9 @@ import { ZodSchema } from 'zod'
 import { KneelProps } from './types'
 import addContentType from './addContentType'
 
-export default async function kneel<I, Schema extends ZodSchema<I>, O = void> (
-  props: KneelProps<I, Schema, O>
-): Promise<O> {
+export default async function kneel<Input, InputSchema extends ZodSchema<Input>, Output = void> (
+  props: KneelProps<Input, InputSchema, Output>
+): Promise<Output> {
   const debug = props.debug ?? false
   const init: RequestInit = {}
   if (props.method != null) {
@@ -18,7 +18,7 @@ export default async function kneel<I, Schema extends ZodSchema<I>, O = void> (
       init.method = 'POST'
     }
     if (debug) {
-      console.debug('kneel request body', props.i)
+      console.info('kneel request body', props.body)
     }
     try {
       const body = props.i.parse(props.body)
@@ -81,11 +81,11 @@ export default async function kneel<I, Schema extends ZodSchema<I>, O = void> (
     throw new Error(text)
   }
   if (props.o == null) {
-    return undefined as unknown as O
+    return undefined as unknown as Output
   }
   const json: unknown = await response.json()
   if (debug) {
-    console.debug('kneel json response', json)
+    console.info('kneel json response', json)
   }
   const payload = props.o.parse(json)
   return payload
