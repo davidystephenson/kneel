@@ -499,7 +499,7 @@ void
 
 ## `kneelMaker`
 
-You can create a `kneel` function with custom parameter middlewere using `kneelMaker`.
+You can create a `kneel` function with custom parameter middleware using `kneelMaker`.
 
 ```ts
 import { kneelMaker } from 'kneel'
