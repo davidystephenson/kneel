@@ -8,15 +8,21 @@ export default function kneelMaker (props: {
   make: KneelMake
 }): Kneel {
   const debug = props.debug ?? false
-  async function madeKneel<Input, InputSchema extends ZodSchema<Input>, Output = void> (input: KneelProps<Input, InputSchema, Output>): Promise<Output> {
+  async function madeKneel<
+    RequestBody,
+    InputSchema extends ZodSchema<RequestBody>,
+    ResponseBody = void
+  > (
+    madeKneelProps: KneelProps<RequestBody, InputSchema, ResponseBody>
+  ): Promise<ResponseBody> {
     if (debug) {
-      console.info('kneelMaker input', input)
+      console.info('kneelMaker input', madeKneelProps)
     }
-    const output = props.make(input)
+    const made = props.make(madeKneelProps)
     if (debug) {
-      console.info('kneelMaker output', output)
+      console.info('kneelMaker output', made)
     }
-    return await kneel(output)
+    return await kneel(made)
   }
   return madeKneel
 }

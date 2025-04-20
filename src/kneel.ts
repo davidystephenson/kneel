@@ -2,9 +2,13 @@ import { ZodSchema } from 'zod'
 import { KneelProps } from './types'
 import addContentType from './addContentType'
 
-export default async function kneel<Input, InputSchema extends ZodSchema<Input>, Output = void> (
-  props: KneelProps<Input, InputSchema, Output>
-): Promise<Output> {
+export default async function kneel<
+  RequestBody,
+  InputSchema extends ZodSchema<RequestBody>,
+  ResponseBody = void
+> (
+  props: KneelProps<RequestBody, InputSchema, ResponseBody>
+): Promise<ResponseBody> {
   const debug = props.debug ?? false
   const init: RequestInit = {}
   if (props.method != null) {
@@ -13,7 +17,7 @@ export default async function kneel<Input, InputSchema extends ZodSchema<Input>,
   if (props.headers != null) {
     init.headers = props.headers
   }
-  if ('i' in props && props.i != null) {
+  if ('input' in props && props.input != null) {
     if (init.method == null) {
       init.method = 'POST'
     }
@@ -21,7 +25,7 @@ export default async function kneel<Input, InputSchema extends ZodSchema<Input>,
       console.info('kneel request body', props.body)
     }
     try {
-      const body = props.i.parse(props.body)
+      const body = props.input.parse(props.body)
       const encoding = 'encoding' in props
         ? props.encoding == null
           ? 'application/json'
@@ -80,13 +84,13 @@ export default async function kneel<Input, InputSchema extends ZodSchema<Input>,
     }
     throw new Error(text)
   }
-  if (props.o == null) {
-    return undefined as unknown as Output
+  if (props.output == null) {
+    return undefined as unknown as ResponseBody
   }
   const json: unknown = await response.json()
   if (debug) {
     console.info('kneel json response', json)
   }
-  const payload = props.o.parse(json)
+  const payload = props.output.parse(json)
   return payload
 }

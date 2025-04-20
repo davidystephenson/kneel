@@ -1,30 +1,48 @@
 import { ZodSchema, z } from 'zod'
 
-export interface RequestPayloadProps <Input, InputSchema extends ZodSchema<Input>> {
+export interface RequestPayloadProps <
+  RequestBody, InputSchema extends ZodSchema<RequestBody>
+> {
   body: z.infer<InputSchema>
   encoding?: 'application/json' | 'application/x-www-form-urlencoded' | 'multipart/form-data' | 'text/plain'
-  i: InputSchema
+  input: InputSchema
 }
 export interface NotRequestPayloadProps {
   body?: undefined
   encoding?: undefined
-  i?: undefined
+  input?: undefined
 }
 export type MaybeRequestPayloadProps <
   Input, InputSchema extends ZodSchema<Input>
 > = RequestPayloadProps<Input, InputSchema>
 | NotRequestPayloadProps
 
-export interface FetchProps <Response> {
+export interface FetchProps <ResponseBody> {
   debug?: boolean
   headers?: HeadersInit
   method?: string
-  o?: ZodSchema<Response>
+  output?: ZodSchema<ResponseBody>
   url: string
 }
 
-export type KneelProps <Input, InputSchema extends ZodSchema<Input>, Response> = FetchProps<Response> & MaybeRequestPayloadProps<Input, InputSchema>
+export type KneelProps <
+  RequestBody,
+  InputSchema extends ZodSchema<RequestBody>,
+  ResponseBody
+> = FetchProps<ResponseBody> & MaybeRequestPayloadProps<RequestBody, InputSchema>
 
-export type KneelMake = <Input, InputSchema extends ZodSchema<Input>, Output = void> (props: KneelProps<Input, InputSchema, Output>) => KneelProps<Input, InputSchema, Output>
+export type KneelMake = <
+  RequestBody,
+  InputSchema extends ZodSchema<RequestBody>,
+  ResponseBody = void
+> (
+  props: KneelProps<RequestBody, InputSchema, ResponseBody>
+) => KneelProps<RequestBody, InputSchema, ResponseBody>
 
-export type Kneel = <Input, InputSchema extends ZodSchema<Input>, Output = void> (props: KneelProps<Input, InputSchema, Output>) => Promise<Output>
+export type Kneel = <
+  RequestBody,
+  InputSchema extends ZodSchema<RequestBody>,
+  ResponseBody = void
+> (
+  props: KneelProps<RequestBody, InputSchema, ResponseBody>
+) => Promise<ResponseBody>

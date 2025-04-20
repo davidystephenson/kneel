@@ -14,19 +14,18 @@ npm install kneel
 import kneel from 'kneel'
 import { z } from 'zod'
 
-const output = await kneel({
+const response = await kneel({
   url: 'http://localhost:3000',
-  o: z.object({ names: z.array(z.string()) })
+  output: z.object({ names: z.array(z.string()) })
 })
-const uppercaseNames = output.names.map((name) => name.toUpperCase())
+const uppercaseNames = response.names.map((name) => name.toUpperCase())
 
-const writeOutput = await kneel({
+const writeResponse = await kneel({
   url: 'http://localhost:3000',
-  i: z.object({ name: z.string() }),
+  input: z.object({ name: z.string() }),
   body: { name: 'Zelda Fitzgerald' },
-  o: z.object({ count: z.number() })
+  output: z.object({ count: z.number() })
 })
-console.log(typeof writeOutput.count) // 'number'
 ```
 
 ## Problem
@@ -38,7 +37,7 @@ Making validation functional can require patterns like annotating with `unknown`
 ```ts
 import { z } from 'zod'
 
-const outputSchema = z.object({ output: z.number() })
+const outputSchema = z.object({ count: z.number() })
 type Output = z.infer<typeof schema>
 async function read (): Promise<Output> {
   const response = await fetch('http://localhost:3000')
@@ -47,7 +46,7 @@ async function read (): Promise<Output> {
   return outputSchema.parse(json)
 }
 
-const inputSchema = z.object({ input: z.string() })
+const inputSchema = z.object({ name: z.string() })
 type Input = z.infer<typeof schema>
 async function write (input: Input): Promise<Output> {
   const body = inputSchema.parse(input)
@@ -70,23 +69,23 @@ async function write (input: Input): Promise<Output> {
 import kneel from 'kneel'
 import { z } from 'zod'
 
-const outputSchema = z.object({ output: z.number() })
+const outputSchema = z.object({ count: z.number() })
 type Output = z.infer<typeof outputSchema>
 async function read (input: Input): Promise<Output> {
   return kneel({
     url: 'http://localhost:3000',
-    o: outputSchema
+    output: outputSchema
   })
 }
 
-const inputSchema = z.object({ input: z.string() })
+const inputSchema = z.object({ name: z.string() })
 type Input = z.infer<typeof inputSchema>
 async function write (input: Input): Promise<Output> {
   return kneel({
     url: 'http://localhost:3000',
-    i: inputSchema,
-    body: { input: 'increment' },
-    o: outputSchema
+    input: inputSchema,
+    body: input,
+    output: outputSchema
   })
 }
 ```
@@ -132,7 +131,7 @@ string
 <td>
 
 ```ts
-i
+input
 ```
 
 </td>
@@ -150,7 +149,7 @@ ZodSchema
 
 ```ts
 z.object({
-  input: z.string()
+  name: z.string()
 })
 ```
 
@@ -160,7 +159,7 @@ z.object({
 <td>
 
 ```ts
-o
+output
 ```
 
 </td>
@@ -178,7 +177,7 @@ ZodSchema
 
 ```ts
 z.object({
-  output: z.number()
+  count: z.number()
 })
 ```
 
@@ -195,21 +194,21 @@ body
 <td>
 
 ```ts
-z.infer<typeof i>
+z.infer<typeof input>
 ```
 
 </td>
 <td>Request body</td>
 <td>
 
-If `i` is set
+If `input` is set
 
 </td>
 <td></td>
 <td>
 
 ```ts
-{ input: 'hello' }
+{ name: 'Ada' }
 ```
 
 </td>
@@ -238,7 +237,7 @@ method
 <td>
 
 `'GET'`,
-`'POST'` if `i` is set
+`'POST'` if `input` is set
 
 </td>
 <td>
@@ -301,7 +300,7 @@ encoding
 'application/json'
 ```
 
-if `i` is set
+if `input` is set
 
 </td>
 <td>
@@ -359,18 +358,18 @@ You can optionally set:
 
 You can optionaly set an output schema with:
 
-* `o`, a `zod` schema
+* `output`, a `zod` schema
 
-If there is an `o` schema, kneel will parse the response body with `.json()`and `o.parse()`, then return it. If there is no `o` schema, `kneel` will return `void`.
+If there is an `output` schema, kneel will parse the response body with `.json()`and `o.parse()`, then return it. If there is no `output` schema, `kneel` will return `void`.
 
 ### Input
 
 You can optionally include a request payload with:
 
-* `i`, a `zod` schema
+* `input`, a `zod` schema
 * `body`, a value matching the `i` schema
 
-The request `body` will be `parse`d by the `i` schema. By default including a body sets the method to `'POST'`.
+The request `body` will be `parse`d by the `input` schema. By default including a body sets the method to `'POST'`.
 
 #### Encoding
 
@@ -379,11 +378,11 @@ By default the request body will be encoded with `JSON.stringify()` and the `Con
 * `encoding`, which must be either `'application/x-www-form-urlencoded'`, `'multipart/form-data'`, `'text/plain'`, or `'application/json'`.
 
 ```ts
-const inputSchema = z.object({ input: z.string() })
+const inputSchema = z.object({ value: z.string() })
 const response = await kneel({
   url: 'http://localhost:3000',
-  i: inputSchema,
-  body: { input: 'hello' },
+  input: inputSchema,
+  body: { value: 'hello' },
   encoding: 'application/x-www-form-urlencoded',
 })
 ```
@@ -399,17 +398,17 @@ import kneel, { KneelProps } from 'kneel'
 import { z, ZodSchema } from 'zod'
 
 const fetchAndLog = async <
-  Input,
-  InputSchema extends ZodSchema<Input>,
-  Output = void
->(props: KneelProps<Input, InputSchema, Output>) => {
+  RequestBody,
+  InputSchema extends ZodSchema<RequestBody>,
+  ResponseBody = void
+>(props: KneelProps<RequestBody, InputSchema, ResponseBody>) => {
   const response = await kneel(props)
   console.log('Response:', response)
 }
 
 await fetchAndLog({
   url: 'http://localhost:3000/hello',
-  o: z.literal('world')
+  output: z.literal('world')
 })
 // 'Response: world'
 ```
@@ -428,7 +427,7 @@ await fetchAndLog({
 <td>
 
 ```ts
-Input
+RequestBody
 ```
 
 </td>
@@ -439,7 +438,7 @@ Input
 <td>
 
 ```ts
-{ input: string }
+{ name: string }
 ```
 
 </td>
@@ -455,7 +454,7 @@ InputSchema
 <td>
 
 ```ts
-ZodSchema<Input>
+ZodSchema<RequestBody>
 ```
 
 </td>
@@ -473,7 +472,7 @@ ZodObject<{ name: ZodString }>
 <td>
 
 ```ts
-Output
+ResponseBody
 ```
 
 </td>
@@ -490,7 +489,7 @@ void
 <td>
 
 ```ts
-{ output: number }
+{ count: number }
 ```
 
 </td>
@@ -513,7 +512,7 @@ const kneelHere = kneelMaker({
 const outputSchema = z.literal('world')
 const response = await kneelHere({
   url: '/hello', // Request is sent to 'http://localhost:3000/hello'
-  o: outputSchema 
+  output: outputSchema 
 })
 console.log(response) // 'world' 
 ```
@@ -539,12 +538,12 @@ make
 
 ```ts
 <
-  Input,
-  InputSchema extends ZodSchema<Input>,
-  Output = void
+  RequestBody,
+  InputSchema extends ZodSchema<RequestBody>,
+  ResponseBody = void
 > (
-  props: KneelProps<Input, InputSchema, Output>
-) => KneelProps<Input, InputSchema, Output>
+  props: KneelProps<RequestBody, InputSchema, ResponseBody>
+) => KneelProps<RequestBody, InputSchema, ResponseBody>
 ```
 
 </td>
