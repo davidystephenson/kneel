@@ -53,7 +53,7 @@ export default async function kneel<
               !(value instanceof Blob) &&
               typeof value !== 'string'
             ) {
-              throw new Error(`Unsupported value type: ${String(value)}`)
+              throw new Error(`multipart/form-data requires string or Blob values, unsupported value for ${key}: ${String(value)}`)
             }
             init.body.append(key, value)
           }
