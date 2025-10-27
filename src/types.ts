@@ -1,19 +1,19 @@
-import { ZodSchema, z } from 'zod'
+import { ZodType, z } from 'zod'
 
 export interface RequestPayloadProps <
-  RequestBody, InputSchema extends ZodSchema<RequestBody>
+  RequestBody, InputSchema extends ZodType<RequestBody>
 > {
-  body: z.infer<InputSchema>
+  input: z.infer<InputSchema>
   encoding?: 'application/json' | 'application/x-www-form-urlencoded' | 'multipart/form-data' | 'text/plain'
-  input: InputSchema
+  inputSchema: InputSchema
 }
 export interface NotRequestPayloadProps {
-  body?: undefined
-  encoding?: undefined
   input?: undefined
+  encoding?: undefined
+  inputSchema?: undefined
 }
 export type MaybeRequestPayloadProps <
-  Input, InputSchema extends ZodSchema<Input>
+  Input, InputSchema extends ZodType<Input>
 > = RequestPayloadProps<Input, InputSchema>
 | NotRequestPayloadProps
 
@@ -21,19 +21,19 @@ export interface FetchProps <ResponseBody> {
   debug?: boolean
   headers?: HeadersInit
   method?: string
-  output?: ZodSchema<ResponseBody>
+  outputSchema?: ZodType<ResponseBody>
   url: string
 }
 
 export type KneelProps <
   RequestBody,
-  InputSchema extends ZodSchema<RequestBody>,
+  InputSchema extends ZodType<RequestBody>,
   ResponseBody
 > = FetchProps<ResponseBody> & MaybeRequestPayloadProps<RequestBody, InputSchema>
 
 export type KneelMake = <
   RequestBody,
-  InputSchema extends ZodSchema<RequestBody>,
+  InputSchema extends ZodType<RequestBody>,
   ResponseBody = void
 > (
   props: KneelProps<RequestBody, InputSchema, ResponseBody>
@@ -41,7 +41,7 @@ export type KneelMake = <
 
 export type Kneel = <
   RequestBody,
-  InputSchema extends ZodSchema<RequestBody>,
+  InputSchema extends ZodType<RequestBody>,
   ResponseBody = void
 > (
   props: KneelProps<RequestBody, InputSchema, ResponseBody>

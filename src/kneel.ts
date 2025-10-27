@@ -17,7 +17,7 @@ export default async function kneel<
   if (props.headers != null) {
     init.headers = props.headers
   }
-  if ('input' in props && props.input != null) {
+  if ('input' in props && props.inputSchema != null) {
     if (init.method == null) {
       init.method = 'POST'
     }
@@ -25,7 +25,7 @@ export default async function kneel<
       console.info('kneel request body', props.body)
     }
     try {
-      const body = props.input.parse(props.body)
+      const body = props.inputSchema.parse(props.body)
       const encoding = 'encoding' in props
         ? props.encoding == null
           ? 'application/json'
@@ -84,13 +84,13 @@ export default async function kneel<
     }
     throw new Error(text)
   }
-  if (props.output == null) {
+  if (props.outputSchema == null) {
     return undefined as unknown as ResponseBody
   }
   const json: unknown = await response.json()
   if (debug) {
     console.info('kneel json response', json)
   }
-  const payload = props.output.parse(json)
+  const payload = props.outputSchema.parse(json)
   return payload
 }
