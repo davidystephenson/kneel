@@ -22,9 +22,9 @@ const uppercaseNames = response.names.map((name) => name.toUpperCase())
 
 const writeResponse = await kneel({
   url: 'http://localhost:3000',
-  input: z.object({ name: z.string() }),
-  body: { name: 'Zelda Fitzgerald' },
-  output: z.object({ count: z.number() })
+  inputSchema: z.object({ name: z.string() }),
+  input: { name: 'Zelda Fitzgerald' },
+  outputSchema: z.object({ count: z.number() })
 })
 ```
 
@@ -74,7 +74,7 @@ type Output = z.infer<typeof outputSchema>
 async function read (input: Input): Promise<Output> {
   return kneel({
     url: 'http://localhost:3000',
-    output: outputSchema
+    outputSchema
   })
 }
 
@@ -83,9 +83,9 @@ type Input = z.infer<typeof inputSchema>
 async function write (input: Input): Promise<Output> {
   return kneel({
     url: 'http://localhost:3000',
-    input: inputSchema,
-    body: input,
-    output: outputSchema
+    input,
+    inputSchema,
+    outputSchema
   })
 }
 ```
@@ -131,7 +131,7 @@ string
 <td>
 
 ```ts
-input
+inputSchema
 ```
 
 </td>
@@ -159,7 +159,7 @@ z.object({
 <td>
 
 ```ts
-output
+outputSchema
 ```
 
 </td>
@@ -187,7 +187,7 @@ z.object({
 <td>
 
 ```ts
-body
+input
 ```
 
 </td>
@@ -201,7 +201,7 @@ z.infer<typeof input>
 <td>Request body</td>
 <td>
 
-If `input` is set
+If `inputSchema` is set
 
 </td>
 <td></td>
@@ -237,7 +237,7 @@ method
 <td>
 
 `'GET'`,
-`'POST'` if `input` is set
+`'POST'` if `inputSchema` is set
 
 </td>
 <td>
@@ -278,7 +278,7 @@ HeadersInit
 <td>
 
 ```ts
-encoding
+contentType
 ```
 
 </td>
@@ -292,7 +292,7 @@ encoding
 ```
 
 </td>
-<td>Request encoding</td>
+<td>`Content-Type` header</td>
 <td>No</td>
 <td>
 
@@ -300,7 +300,7 @@ encoding
 'application/json'
 ```
 
-if `input` is set
+if `inputSchema` is set
 
 </td>
 <td>
@@ -358,20 +358,20 @@ You can optionally set:
 
 You can optionaly set an output schema with:
 
-* `output`, a `zod` schema
+* `outputSchema`, a `zod` schema
 
-If there is an `output` schema, kneel will parse the response body with `.json()`and `o.parse()`, then return it. If there is no `output` schema, `kneel` will return `void`.
+If there is an `outputSchema`, kneel will parse the response body with `.json()`and `outputSchema.parse()`, then return it. If there is no `outputSchema`, `kneel` will return `void`.
 
 ### Input
 
 You can optionally include a request payload with:
 
-* `input`, a `zod` schema
-* `body`, a value matching the `i` schema
+* `inputSchema`, a `zod` schema
+* `input`, a value matching the `i` schema
 
-The request `body` will be `parse`d by the `input` schema. By default including a body sets the method to `'POST'`.
+The `input` will be `parse`d by the `inputSchema`. By default including `input` sets the method to `'POST'`.
 
-#### Encoding
+#### Content Type
 
 By default the request body will be encoded with `JSON.stringify()` and the `Content-Type` header will be set to `application/json`. You can override this with:
 
@@ -381,13 +381,13 @@ By default the request body will be encoded with `JSON.stringify()` and the `Con
 const inputSchema = z.object({ value: z.string() })
 const response = await kneel({
   url: 'http://localhost:3000',
-  input: inputSchema,
-  body: { value: 'hello' },
-  encoding: 'application/x-www-form-urlencoded',
+  input: { value: 'hello' },
+  inputSchema,
+  contentType: 'application/x-www-form-urlencoded',
 })
 ```
 
-The `encoding` becomes the value of the `Content-Type` header. `application/x-www-form-urlencoded` uses `new URLSearchParams()` to encode the body. `multipart/form-data` uses `new FormData()`. `text/plain` uses `String()`.
+The `contentType` becomes the value of the `Content-Type` header. `application/x-www-form-urlencoded` encodes the body with `new URLSearchParams()`. `multipart/form-data` uses `new FormData()`. `text/plain` uses `String()`.
 
 ### `KneelProps`
 
@@ -408,7 +408,7 @@ const fetchAndLog = async <
 
 await fetchAndLog({
   url: 'http://localhost:3000/hello',
-  output: z.literal('world')
+  outputSchema: z.literal('world')
 })
 // 'Response: world'
 ```
@@ -512,7 +512,7 @@ const kneelHere = kneelMaker({
 const outputSchema = z.literal('world')
 const response = await kneelHere({
   url: '/hello', // Request is sent to 'http://localhost:3000/hello'
-  output: outputSchema 
+  outputSchema 
 })
 console.log(response) // 'world' 
 ```

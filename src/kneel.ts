@@ -1,6 +1,6 @@
 import { ZodSchema } from 'zod'
 import { KneelProps } from './types'
-import addContentType from './addContentType'
+import addHeader from './addHeader'
 
 export default async function kneel<
   RequestBody,
@@ -22,16 +22,16 @@ export default async function kneel<
       init.method = 'POST'
     }
     if (debug) {
-      console.info('kneel request body', props.body)
+      console.info('kneel request body', props.input)
     }
     try {
-      const body = props.inputSchema.parse(props.body)
-      const encoding = 'encoding' in props
-        ? props.encoding == null
+      const body = props.inputSchema.parse(props.input)
+      const contentType = 'contentType' in props
+        ? props.contentType == null
           ? 'application/json'
-          : props.encoding
+          : props.contentType
         : 'application/json'
-      switch (encoding) {
+      switch (contentType) {
         case 'application/json': {
           init.body = JSON.stringify(body)
           break
@@ -63,11 +63,16 @@ export default async function kneel<
           init.body = String(body)
           break
         }
-        default: throw new Error(`Unsupported encoding: ${String(encoding)}`)
+        default: throw new Error(`Unsupported content type: ${String(contentType)}`)
       }
-      addContentType({
+      if (init.headers == null) {
+        init.headers = {}
+      }
+
+      addHeader({
         headers: init.headers,
-        value: encoding
+        value: contentType,
+        key: 'Content-Type'
       })
     } catch (error) {
       if (debug) {

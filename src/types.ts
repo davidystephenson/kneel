@@ -4,12 +4,12 @@ export interface RequestPayloadProps <
   RequestBody, InputSchema extends ZodType<RequestBody>
 > {
   input: z.infer<InputSchema>
-  encoding?: 'application/json' | 'application/x-www-form-urlencoded' | 'multipart/form-data' | 'text/plain'
+  contentType?: 'application/json' | 'application/x-www-form-urlencoded' | 'multipart/form-data' | 'text/plain'
   inputSchema: InputSchema
 }
 export interface NotRequestPayloadProps {
   input?: undefined
-  encoding?: undefined
+  contentType?: undefined
   inputSchema?: undefined
 }
 export type MaybeRequestPayloadProps <

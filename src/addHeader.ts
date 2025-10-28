@@ -1,5 +1,5 @@
 export default function addHeader (props: {
-  headers: RequestInit['headers']
+  headers: NonNullable<RequestInit['headers']>
   key: string
   value: string
 }): void {
