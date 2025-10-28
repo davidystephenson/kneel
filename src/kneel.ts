@@ -69,11 +69,13 @@ export default async function kneel<
         init.headers = {}
       }
 
-      addHeader({
-        headers: init.headers,
-        value: contentType,
-        key: 'Content-Type'
-      })
+      if (props.headered !== false) {
+        addHeader({
+          headers: init.headers,
+          value: contentType,
+          key: 'Content-Type'
+        })
+      }
     } catch (error) {
       if (debug) {
         console.error('kneel request body error', error)

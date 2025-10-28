@@ -95,6 +95,28 @@ describe('kneel', () => {
       })
     })
 
+    describe('with headered: false', () => {
+      it('should not add the Content-Type header', async () => {
+        const inputSchema = z.object({
+          name: z.string(),
+          email: z.string()
+        })
+        const input = { name: 'Zelda', email: 'zelda@fitzgerald.com' }
+        await kneel({
+          url: 'https://api.example.com/data',
+          inputSchema,
+          input,
+          headered: false
+        })
+
+        expect(global.fetch).toHaveBeenCalledWith('https://api.example.com/data', {
+          method: 'POST',
+          body: JSON.stringify(input),
+          headers: {}
+        })
+      })
+    })
+
     describe('with explicit method', () => {
       it('should override the method', async () => {
         const inputSchema = z.object({
@@ -203,6 +225,31 @@ describe('kneel', () => {
           input: inputData,
           contentType: 'multipart/form-data'
         })).rejects.toThrow('multipart/form-data requires string or Blob values')
+      })
+
+      describe('with headered: false', () => {
+        it('should not add the Content-Type header', async () => {
+          const blob = new Blob(['file content'], { type: 'text/plain' })
+          const inputSchema = z.object({
+            file: z.instanceof(Blob),
+            name: z.string()
+          })
+          const input = { file: blob, name: 'test.txt' }
+
+          await kneel({
+            url: 'https://api.example.com/files',
+            inputSchema,
+            input,
+            contentType: 'multipart/form-data',
+            headered: false
+          })
+
+          const call = fetchSpy.mock.calls[0]
+          expect(call[1].body).toBeInstanceOf(FormData)
+          expect(call[1].body.get('file')).toBeInstanceOf(File)
+          expect(call[1].body.get('name')).toBe('test.txt')
+          expect(call[1].headers).toEqual({})
+        })
       })
     })
 

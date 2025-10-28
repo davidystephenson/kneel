@@ -5,11 +5,13 @@ export interface RequestPayloadProps <
 > {
   input: z.infer<InputSchema>
   contentType?: 'application/json' | 'application/x-www-form-urlencoded' | 'multipart/form-data' | 'text/plain'
+  headered?: boolean
   inputSchema: InputSchema
 }
 export interface NotRequestPayloadProps {
   input?: undefined
   contentType?: undefined
+  headered?: undefined
   inputSchema?: undefined
 }
 export type MaybeRequestPayloadProps <

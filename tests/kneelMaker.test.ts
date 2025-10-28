@@ -3,7 +3,7 @@ import kneel from '../src/kneel'
 import { z } from 'zod'
 
 // Mock the kneel function
-jest.mock('../../src/kneel')
+jest.mock('../src/kneel')
 const mockKneel = jest.mocked(kneel)
 
 describe('kneelMaker', () => {
