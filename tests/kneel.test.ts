@@ -106,7 +106,7 @@ describe('kneel', () => {
           url: 'https://api.example.com/data',
           inputSchema,
           input,
-          headered: false
+          includeContentHeader: false
         })
 
         expect(global.fetch).toHaveBeenCalledWith('https://api.example.com/data', {
@@ -227,7 +227,7 @@ describe('kneel', () => {
         })).rejects.toThrow('multipart/form-data requires string or Blob values')
       })
 
-      describe('with headered: false', () => {
+      describe('with includeContentHeader: false', () => {
         it('should not add the Content-Type header', async () => {
           const blob = new Blob(['file content'], { type: 'text/plain' })
           const inputSchema = z.object({
@@ -241,7 +241,7 @@ describe('kneel', () => {
             inputSchema,
             input,
             contentType: 'multipart/form-data',
-            headered: false
+            includeContentHeader: false
           })
 
           const call = fetchSpy.mock.calls[0]

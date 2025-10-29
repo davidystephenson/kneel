@@ -69,7 +69,7 @@ export default async function kneel<
         init.headers = {}
       }
 
-      if (props.headered !== false) {
+      if (props.includeContentHeader !== false) {
         addHeader({
           headers: init.headers,
           value: contentType,
