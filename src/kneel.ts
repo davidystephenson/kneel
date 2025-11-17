@@ -10,7 +10,9 @@ export default async function kneel<
   props: KneelProps<RequestBody, InputSchema, ResponseBody>
 ): Promise<ResponseBody> {
   const debug = props.debug ?? false
-  const init: RequestInit = {}
+  const init: RequestInit = {
+    credentials: 'include'
+  }
   if (props.method != null) {
     init.method = props.method
   }

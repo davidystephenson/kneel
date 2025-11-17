@@ -12,7 +12,9 @@ describe('kneel', () => {
 
   it('should call fetch once', async () => {
     await kneel({ url: 'https://example.com' })
-    expect(fetchSpy).toHaveBeenCalledWith('https://example.com', {})
+    expect(fetchSpy).toHaveBeenCalledWith('https://example.com', {
+      credentials: 'include'
+    })
     expect(fetchSpy).toHaveBeenCalledTimes(1)
   })
 
@@ -30,6 +32,13 @@ describe('kneel', () => {
     expect(result).toEqual(expected)
   })
 
+  it('should include credentials', async () => {
+    await kneel({ url: 'https://api.example.com/data' })
+    expect(fetchSpy).toHaveBeenCalledWith('https://api.example.com/data', {
+      credentials: 'include'
+    })
+  })
+
   it('should include custom headers', async () => {
     await kneel({
       url: 'https://api.example.com/data',
@@ -40,6 +49,7 @@ describe('kneel', () => {
     })
 
     expect(fetchSpy).toHaveBeenCalledWith('https://api.example.com/data', {
+      credentials: 'include',
       headers: {
         'Authorization': 'Bearer token123',
         'Accept': 'application/json'
@@ -60,6 +70,7 @@ describe('kneel', () => {
         input
       })
       expect(fetchSpy).toHaveBeenCalledWith('https://api.example.com/data', {
+        credentials: 'include',
         method: 'POST',
         body: JSON.stringify(input),
         headers: {
@@ -85,6 +96,7 @@ describe('kneel', () => {
       })
 
       expect(global.fetch).toHaveBeenCalledWith('https://api.example.com/data', {
+        credentials: 'include',
         method: 'POST',
         headers: {
           'Authorization': 'Bearer token',
@@ -110,6 +122,7 @@ describe('kneel', () => {
         })
 
         expect(global.fetch).toHaveBeenCalledWith('https://api.example.com/data', {
+          credentials: 'include',
           method: 'POST',
           body: JSON.stringify(input),
           headers: {}
@@ -131,6 +144,7 @@ describe('kneel', () => {
           input
         })
         expect(fetchSpy).toHaveBeenCalledWith('https://api.example.com/users/1', {
+          credentials: 'include',
           method: 'PUT',
           body: JSON.stringify(input),
           headers: {
@@ -157,6 +171,7 @@ describe('kneel', () => {
         expectedBody.append('username', 'john')
         expectedBody.append('password', 'secret123')
         expect(fetchSpy).toHaveBeenCalledWith('https://api.example.com/login', {
+          credentials: 'include',
           method: 'POST',
           body: expectedBody,
           headers: {
@@ -262,6 +277,7 @@ describe('kneel', () => {
           contentType: 'text/plain'
         })
         expect(fetchSpy).toHaveBeenCalledWith('https://api.example.com/webhook', {
+          credentials: 'include',
           method: 'POST',
           body: '42',
           headers: {
